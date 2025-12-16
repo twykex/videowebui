@@ -71,216 +71,408 @@ HTML_TEMPLATE = """
     <title>Kandinsky Studio</title>
     <style>
         :root {
-            --bg-color: #F5F5F7;
-            --card-bg: #FFFFFF;
+            --bg-gradient: radial-gradient(circle at 0% 0%, #e0f7fa 0%, #ffffff 50%, #f3e5f5 100%);
+            --glass-bg: rgba(255, 255, 255, 0.65);
+            --glass-border: rgba(255, 255, 255, 0.5);
             --text-primary: #1D1D1F;
             --text-secondary: #86868B;
             --accent-blue: #0071E3;
-            --accent-hover: #0077ED;
-            --shadow: 0 10px 30px rgba(0,0,0,0.08);
+            --accent-glow: rgba(0, 113, 227, 0.3);
+            --danger: #FF3B30;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 40px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-gradient: radial-gradient(circle at 50% 50%, #1a1a1a 0%, #000000 100%);
+                --glass-bg: rgba(28, 28, 30, 0.65);
+                --glass-border: rgba(255, 255, 255, 0.1);
+                --text-primary: #F5F5F7;
+                --text-secondary: #86868B;
+            }
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
-            background-color: var(--bg-color);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+            background: var(--bg-gradient);
+            background-size: 200% 200%;
+            animation: gradientBG 15s ease infinite;
             color: var(--text-primary);
             margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
         }
 
-        .container {
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* Main Layout */
+        main {
             width: 100%;
-            max-width: 680px;
-            padding: 20px;
+            max-width: 800px;
+            padding: 40px 20px;
+            box-sizing: border-box;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
         }
 
-        .card {
-            background: var(--card-bg);
+        /* Glass Card */
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px) saturate(180%);
+            -webkit-backdrop-filter: blur(25px) saturate(180%);
+            border: 1px solid var(--glass-border);
             border-radius: 24px;
             padding: 40px;
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow-lg);
+            transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* Header */
+        header {
             text-align: center;
-            transition: transform 0.3s ease;
+            margin-bottom: 20px;
         }
 
         h1 {
+            font-weight: 700;
+            font-size: 42px;
+            margin: 0;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--text-secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .badge {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 6px 12px;
+            background: rgba(0, 113, 227, 0.1);
+            color: var(--accent-blue);
+            border-radius: 20px;
+            font-size: 13px;
             font-weight: 600;
-            font-size: 28px;
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
         }
 
-        p.subtitle {
-            color: var(--text-secondary);
-            font-size: 15px;
+        /* Input Area */
+        .input-wrapper {
+            position: relative;
             margin-bottom: 30px;
-        }
-
-        .input-group {
-            margin-bottom: 25px;
-            text-align: left;
         }
 
         textarea {
             width: 100%;
-            padding: 16px;
-            font-size: 17px;
-            border: 1px solid #D2D2D7;
-            border-radius: 12px;
-            outline: none;
+            min-height: 120px;
+            padding: 20px;
+            font-size: 18px;
+            line-height: 1.5;
+            background: rgba(255, 255, 255, 0.5);
+            border: none;
+            border-radius: 18px;
+            color: var(--text-primary);
             resize: none;
             font-family: inherit;
             box-sizing: border-box;
-            background: #FAFAFA;
-            transition: all 0.2s;
-            height: 100px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            transition: all 0.3s ease;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            textarea { background: rgba(0, 0, 0, 0.2); }
         }
 
         textarea:focus {
-            border-color: var(--accent-blue);
-            background: #FFF;
-            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.15);
+            outline: none;
+            background: rgba(255, 255, 255, 0.8);
+            box-shadow: 0 0 0 4px var(--accent-glow);
         }
 
-        button {
-            background-color: var(--accent-blue);
+        /* Primary Button */
+        .primary-btn {
+            background: var(--accent-blue);
             color: white;
             border: none;
-            padding: 14px 28px;
-            font-size: 17px;
-            font-weight: 500;
-            border-radius: 980px; /* Pill shape */
+            padding: 18px 36px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 99px;
             cursor: pointer;
-            transition: all 0.2s;
             width: 100%;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
         }
 
-        button:hover {
-            background-color: var(--accent-hover);
-            transform: scale(1.01);
+        .primary-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 10px 20px rgba(0, 113, 227, 0.3);
         }
 
-        button:active {
+        .primary-btn:active {
             transform: scale(0.98);
         }
 
-        button:disabled {
-            background-color: #E5E5E5;
-            color: #A1A1A6;
+        .primary-btn:disabled {
+            background: var(--text-secondary);
+            opacity: 0.5;
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
 
-        /* Loading Spinner */
-        .spinner {
-            display: none;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255,255,255,0.3);
-            border-radius: 50%;
-            border-top-color: #fff;
-            animation: spin 1s ease-in-out infinite;
-            margin: 0 auto;
+        /* Gallery */
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-top: 40px;
+            opacity: 0;
+            animation: fadeIn 1s ease forwards;
         }
 
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .video-card {
+            background: var(--glass-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--glass-border);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            position: relative;
+        }
 
-        /* Video Result */
-        #result-area {
-            margin-top: 30px;
-            display: none;
-            animation: fadeIn 0.5s ease;
+        .video-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
         }
 
         video {
             width: 100%;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            display: block;
             background: #000;
         }
 
-        .status {
-            margin-top: 15px;
-            font-size: 14px;
+        .card-footer {
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .timestamp {
+            font-size: 13px;
             color: var(--text-secondary);
         }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .download-btn {
+            color: var(--accent-blue);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* Toast Notification */
+        #toast-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-size: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        /* Spinner */
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="card">
-        <h1>Kandinsky Studio</h1>
-        <p class="subtitle">Powered by RTX 5080 & SageAttention</p>
+    <main>
+        <div class="glass-panel">
+            <header>
+                <h1>Kandinsky Studio</h1>
+                <div class="badge">AI Motion Engine</div>
+            </header>
 
-        <div class="input-group">
-            <textarea id="promptInput" placeholder="Describe your video imagination..."></textarea>
+            <div class="input-wrapper">
+                <textarea id="promptInput" placeholder="Imagine a scene... e.g., 'A cyberpunk city in rain, neon lights reflecting on wet pavement'"></textarea>
+            </div>
+
+            <button id="generateBtn" class="primary-btn" onclick="generateVideo()">
+                <span id="btnText">Generate Cinematic</span>
+                <div class="spinner" id="btnSpinner" style="display: none;"></div>
+            </button>
         </div>
 
-        <button id="generateBtn" onclick="generateVideo()">
-            <span id="btnText">Generate Video</span>
-            <div class="spinner" id="btnSpinner"></div>
-        </button>
-
-        <div id="result-area">
-            <video id="videoPlayer" controls loop autoplay muted playsinline></video>
-            <div class="status" id="statusText">Generation complete</div>
+        <div id="gallery" class="gallery">
+            <!-- New videos appear here -->
         </div>
-    </div>
-</div>
+    </main>
 
-<script>
-    async function generateVideo() {
-        const prompt = document.getElementById('promptInput').value;
-        if (!prompt) return;
+    <div id="toast-container"></div>
 
-        // UI Updates
-        const btn = document.getElementById('generateBtn');
-        const btnText = document.getElementById('btnText');
-        const spinner = document.getElementById('btnSpinner');
-        const resultArea = document.getElementById('result-area');
-        const statusText = document.getElementById('statusText');
+    <script>
+        // Icons
+        const ICON_DOWNLOAD = `<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/><path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/></svg>`;
 
-        btn.disabled = true;
-        btnText.style.display = 'none';
-        spinner.style.display = 'block';
-        resultArea.style.display = 'none';
+        async function generateVideo() {
+            const promptInput = document.getElementById('promptInput');
+            const prompt = promptInput.value.trim();
 
-        try {
-            const response = await fetch('/generate', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ prompt: prompt })
-            });
+            if (!prompt) {
+                showToast("Please enter a prompt first.", "error");
+                promptInput.focus();
+                return;
+            }
 
-            if (!response.ok) throw new Error("Generation failed");
+            // UI State: Loading
+            setLoading(true);
 
-            const data = await response.json();
+            try {
+                const response = await fetch('/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ prompt: prompt })
+                });
 
-            // Show Result
-            const videoPlayer = document.getElementById('videoPlayer');
-            // Add a timestamp to prevent browser caching the old video
-            videoPlayer.src = data.url + "?t=" + new Date().getTime(); 
-            resultArea.style.display = 'block';
-            statusText.innerText = `Saved to: ${data.path}`;
+                if (!response.ok) throw new Error("Server error");
 
-        } catch (error) {
-            alert("Error generating video: " + error.message);
-        } finally {
-            // Reset UI
-            btn.disabled = false;
-            btnText.style.display = 'block';
-            spinner.style.display = 'none';
+                const data = await response.json();
+
+                if (data.error) throw new Error(data.error);
+
+                // Success
+                addVideoToGallery(data.url, data.path);
+                showToast("Video generated successfully!");
+                promptInput.value = ""; // Clear input on success
+
+            } catch (error) {
+                console.error(error);
+                showToast("Generation failed: " + error.message, "error");
+            } finally {
+                setLoading(false);
+            }
         }
-    }
-</script>
 
+        function setLoading(isLoading) {
+            const btn = document.getElementById('generateBtn');
+            const btnText = document.getElementById('btnText');
+            const spinner = document.getElementById('btnSpinner');
+
+            btn.disabled = isLoading;
+            if (isLoading) {
+                btnText.style.display = 'none';
+                spinner.style.display = 'block';
+                btn.style.opacity = '0.8';
+            } else {
+                btnText.style.display = 'inline';
+                spinner.style.display = 'none';
+                btn.style.opacity = '1';
+            }
+        }
+
+        function addVideoToGallery(url, path) {
+            const gallery = document.getElementById('gallery');
+            const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+            const card = document.createElement('div');
+            card.className = 'video-card';
+
+            // Prevent cache with timestamp query
+            const videoUrl = `${url}?t=${Date.now()}`;
+
+            card.innerHTML = `
+                <video controls autoplay loop muted playsinline>
+                    <source src="${videoUrl}" type="video/mp4">
+                    Your browser does not support video.
+                </video>
+                <div class="card-footer">
+                    <span class="timestamp">${timestamp}</span>
+                    <a href="${videoUrl}" download="${path.split('/').pop()}" class="download-btn">
+                        ${ICON_DOWNLOAD} Download
+                    </a>
+                </div>
+            `;
+
+            // Add to top
+            gallery.prepend(card);
+        }
+
+        function showToast(message, type = "success") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+
+            // Icon based on type
+            const icon = type === 'error' ? '⚠️' : '✨';
+
+            toast.innerHTML = `<span>${icon}</span> ${message}`;
+
+            if (type === 'error') {
+                toast.style.background = 'rgba(255, 59, 48, 0.9)';
+            }
+
+            container.appendChild(toast);
+
+            // Remove after 3s
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(20px)';
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+    </script>
 </body>
 </html>
 """
