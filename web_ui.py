@@ -1,21 +1,24 @@
 import os
 import time
-import torch
 import uvicorn
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
 from threading import Lock
 
 # --- KANDINSKY IMPORTS ---
+# This assumes the script is running inside the 'kandinsky-5' folder
 from kandinsky import get_T2V_pipeline
 
-# --- CONFIGURATION (Your "Fastest Way" Settings) ---
+# --- CONFIGURATION ---
 CONFIG_PATH = "configs/k5_lite_t2v_5s_distil_sd.yaml"
 OUTPUT_DIR = "outputs"
 DEVICE_MAP = {"dit": "cuda:0", "vae": "cuda:0", "text_embedder": "cuda:0"}
+
+# --- CRITICAL FIX: Create folder BEFORE app starts ---
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # Global variables
 pipe = None
@@ -29,25 +32,28 @@ async def lifespan(app: FastAPI):
     print("\n🍏 INITIALIZING KANDINSKY STUDIO...")
     print("✨ Loading Distilled Model + SageAttention + Quantization...")
 
-    # Initialize the pipeline with your optimized settings
-    pipe = get_T2V_pipeline(
-        device_map=DEVICE_MAP,
-        conf_path=CONFIG_PATH,
-        offload=True,  # Saves VRAM
-        quantized_qwen=True,  # Fits text encoder in 16GB
-        attention_engine="sage",  # Maximum Speed
-    )
+    try:
+        # Initialize the pipeline with your optimized settings
+        pipe = get_T2V_pipeline(
+            device_map=DEVICE_MAP,
+            conf_path=CONFIG_PATH,
+            offload=True,  # Saves VRAM
+            quantized_qwen=True,  # Fits text encoder in 16GB
+            attention_engine="auto",  # Maximum Speed
+        )
+        print("✅ Model Loaded & Ready! Open http://localhost:8000 in your browser.\n")
+    except Exception as e:
+        print(f"\n❌ FATAL ERROR LOADING MODEL: {e}")
+        print("Tip: If this is a CUDA error, re-install PyTorch Nightly.\n")
+        raise e
 
-    # Create output directory
-    os.makedirs(OUTPUT_DIR, exist_ok=True)
-
-    print("✅ Model Loaded & Ready! Open http://localhost:8000 in your browser.\n")
     yield
     print("Shutting down...")
 
 
 # --- APP SETUP ---
 app = FastAPI(lifespan=lifespan)
+# Mount the output folder so the browser can see the generated videos
 app.mount("/outputs", StaticFiles(directory=OUTPUT_DIR), name="outputs")
 
 
@@ -259,7 +265,8 @@ HTML_TEMPLATE = """
 
             // Show Result
             const videoPlayer = document.getElementById('videoPlayer');
-            videoPlayer.src = data.url;
+            // Add a timestamp to prevent browser caching the old video
+            videoPlayer.src = data.url + "?t=" + new Date().getTime(); 
             resultArea.style.display = 'block';
             statusText.innerText = `Saved to: ${data.path}`;
 
@@ -295,7 +302,7 @@ async def generate(request: PromptRequest):
         save_path = os.path.join(OUTPUT_DIR, filename)
 
         # --- GENERATION LOGIC ---
-        # Using 512x512 to ensure 16GB VRAM safety without tiling
+        # Safe defaults for 16GB VRAM
         pipe(
             text=request.prompt,
             time_length=5,  # 5 Seconds
@@ -315,4 +322,5 @@ async def generate(request: PromptRequest):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8001)
+    # Runs on port 8000. Access via http://localhost:8000
+    uvicorn.run(app, host="0.0.0.0", port=8000)

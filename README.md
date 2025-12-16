@@ -1,57 +1,82 @@
-# 🍏 Kandinsky 5.0 Studio (Web UI)
+Here are your new documentation files.
 
-A standalone, Apple-designed Web Interface for the [Kandinsky 5.0](https://github.com/kandinskylab/kandinsky-5) video generation model.
+1. README.md (The Public Guide)
+This is updated to reflect the simplified "One-Click" setup using run.bat and the auto attention engine (so users don't get stuck installing SageAttention).
 
-**Note:** This repository contains the frontend logic (`web_ui.py`). It is designed to run *inside* the official Kandinsky 5.0 environment.
+Markdown
 
-## 🚀 Installation
+# 🍏 Kandinsky 5.0 Studio
 
-1. **Clone the Official Repository:**
-   First, set up the base model environment:
-   ```bash
-   git clone [https://github.com/kandinskylab/kandinsky-5.git](https://github.com/kandinskylab/kandinsky-5.git)
-   cd kandinsky-5
-   pip install -r requirements.txt
-Install Web UI Dependencies:
+**A professional, Apple-inspired Web Interface for the [Kandinsky 5.0](https://github.com/kandinskylab/kandinsky-5) video generation model.**
 
-Bash
+Designed for high-end NVIDIA GPUs (RTX 3090, 4090, 5080/5090). It features a "Twin-Folder" architecture to keep your interface clean while leveraging the massive power of the Kandinsky engine.
 
-pip install fastapi uvicorn
-Add the Studio UI: Download web_ui.py from this repository and place it in the root of the kandinsky-5 folder.
+![Python](https://img.shields.io/badge/Python-3.12-blue) ![PyTorch](https://img.shields.io/badge/PyTorch-Nightly-red) ![Status](https://img.shields.io/badge/Status-Stable-brightgreen)
 
+## ✨ Features
+* **One-Click Launch:** Smart `run.bat` script handles environment switching and dependency checks.
+* **Instant Inference:** Keeps the model loaded in RAM; no loading bars between generations.
+* **Safety First:** optimized resolution settings (`512x512`) to prevent VRAM crashes on 16GB cards.
+* **RTX 50-Series Ready:** Built for Blackwell architecture compatibility.
+
+---
+
+## 📂 Project Structure
+This system relies on two repositories sitting side-by-side:
+
+```text
+Projects/
+├── Kandinsky-Studio/      <-- [THIS REPO] The UI, Launcher, and Docs.
+└── kandinsky-5/           <-- [ENGINE] The official model code & huge weights.
+🚀 Installation
+1. Clone Repositories
+Create a folder for your project and clone both this UI and the engine:
+
+PowerShell
+
+git clone [https://github.com/YOUR_USERNAME/Kandinsky-Studio.git](https://github.com/YOUR_USERNAME/Kandinsky-Studio.git)
+git clone [https://github.com/kandinskylab/kandinsky-5.git](https://github.com/kandinskylab/kandinsky-5.git)
+2. Setup the Engine
+Open a terminal in the kandinsky-5 folder:
+
+PowerShell
+
+cd kandinsky-5
+python -m venv venv
+.\venv\Scripts\activate
+
+# A. Install PyTorch Nightly (CRITICAL for RTX 50-series / CUDA 12.8)
+pip install --pre torch torchvision torchaudio --index-url [https://download.pytorch.org/whl/nightly/cu128](https://download.pytorch.org/whl/nightly/cu128)
+
+# B. Install Dependencies
+pip install -r requirements.txt
+pip install "numpy<2.3.0"  # Fix compatibility
+3. Download Model Weights
+Still in the engine folder, download the fast "Distilled" model:
+
+PowerShell
+
+python download_models.py --models kandinskylab/Kandinsky-5.0-T2V-Lite-distilled16steps-5s
 ⚡ How to Run
-Run the script from inside the folder:
+You never need to touch the terminal again.
 
-Bash
+Open the Kandinsky-Studio folder.
 
-python web_ui.py
-Open http://localhost:8000 to start generating videos instantly.
+Double-click run.bat.
 
+Wait for the server to start.
 
-### **Step 3: Push to GitHub**
-Now your folder contains exactly what you wanted: clean, standalone code without the heavy model files.
+Open http://localhost:8000 in your browser.
 
-Run these commands to finish the upload:
+🛠️ Troubleshooting
+"FileNotFoundError: configs/..."
 
-```powershell
-# 1. Initialize Git (if you haven't already)
-git init
+Your run.bat isn't switching folders correctly. Ensure you are using the latest version which uses cd /d.
 
-# 2. Add your 3 clean files
-git add .
+"User provided device_type of 'cuda', but CUDA is not available"
 
-# 3. Commit
-git commit -m "Initial release of Kandinsky Studio Web UI"
+You installed the wrong PyTorch. You must force re-install the Nightly build: pip install --pre torch ... --force-reinstall --index-url ...nightly/cu128
 
-# 4. Connect to your NEW repo (Create 'Kandinsky-Studio' on GitHub first!)
-# Replace YOUR_USERNAME with your actual GitHub username
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/Kandinsky-Studio.git
+"Sage engine selected, but can't be imported"
 
-# 5. Push
-git push -u origin main
-Result:
-
-GitHub: Contains only web_ui.py, README.md, and requirements.txt.
-
-Usage: People will download your script and drop it into their folder to get the beautiful interface
+Edit web_ui.py and ensure attention_engine="auto". This uses the built-in PyTorch acceleration which is stable and fast.
